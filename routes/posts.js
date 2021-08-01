@@ -33,14 +33,39 @@ router.delete("/:id", async (req, res) => {
       await post.deleteOne();
       res.status(200).json("Post Deleted");
     } else {
-      res.status(404).json("You can delete only your post");
+      res.status(403).json("You can delete only your post");
     }
   } catch (err) {
     res.status(500).json(err);
   }
 });
-// 4. Like a Post
+
+// 4. Like/Dislike a Post
+router.put("/:id/like", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post.likes.includes(req.body.userID)) {
+      await post.updateOne({ $push: { likes: req.body.userID } });
+      res.status(200).json("Post Liked");
+    } else {
+      await post.updateOne({ $pull: { likes: req.body.userID } });
+      res.status(200).json("Post Disliked");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 // 5. Get a Post
+router.get("/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 // 6. Get timeline Posts
+router.get("/timeline", async (req, res) => {});
 
 module.exports = router;
