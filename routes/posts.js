@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Post = require("../models/Post");
+const User = require("../models/User");
 
 // 1. Create a Post
 router.post("/", async (req, res) => {
@@ -11,6 +12,7 @@ router.post("/", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 // 2. Update a Post
 router.put("/:id", async (req, res) => {
   try {
@@ -25,6 +27,7 @@ router.put("/:id", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 // 3. Delete a Post
 router.delete("/:id", async (req, res) => {
   try {
@@ -66,6 +69,19 @@ router.get("/:id", async (req, res) => {
   }
 });
 // 6. Get timeline Posts
-router.get("/timeline", async (req, res) => {});
+router.get("/timeline/all", async (req, res) => {
+  try {
+    const currentUser = await User.findById(req.body.userID);
+    const userPosts = await Post.find({ userID: currentUser._id });
+    const friendsPosts = await Promise.all(
+      currentUser.followings.map((friendID) => {
+        return Post.find({ userID: friendID });
+      })
+    );
+    res.status(200).json(userPosts.concat(...friendsPost));
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 module.exports = router;
